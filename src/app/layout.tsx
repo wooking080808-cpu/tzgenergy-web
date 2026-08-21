@@ -32,12 +32,7 @@ export const metadata: Metadata = {
   robots: {
     index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
-  alternates: {
-    canonical: "/",
-    languages: {
-      "en": "/en", "zh-CN": "/zh", "ru-RU": "/ru", "ar-SA": "/ar", "x-default": "/en",
-    },
-  },
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
