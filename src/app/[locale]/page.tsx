@@ -126,6 +126,67 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
+      {/* Organization + LocalBusiness JSON-LD */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': 'https://tzgenergy.com/#organization',
+            name: 'TZG Energy',
+            alternateName: 'TZG Energy Co., Ltd.',
+            url: 'https://tzgenergy.com',
+            logo: 'https://tzgenergy.com/logo.png',
+            description: 'Premium LiFePO4 battery energy storage system manufacturer serving 50+ countries worldwide.',
+            foundingDate: '2015',
+            sameAs: [
+              'https://www.linkedin.com/company/tzg-energy',
+              'https://www.youtube.com/@tzgenergy',
+            ],
+            contactPoint: [{
+              '@type': 'ContactPoint',
+              telephone: '+86-755-0000-0000',
+              contactType: 'sales',
+              areaServed: ['RU', 'CN', 'SA', 'AE', 'DE', 'GB', 'US', 'KZ', 'BY'],
+              availableLanguage: ['English', 'Russian', 'Arabic', 'Chinese'],
+            }],
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Industrial Park',
+              addressLocality: 'Shenzhen',
+              addressRegion: 'Guangdong',
+              postalCode: '518000',
+              addressCountry: 'CN',
+            },
+          },
+          {
+            '@type': 'LocalBusiness',
+            '@id': 'https://tzgenergy.com/#localbusiness',
+            parentOrganization: { '@id': 'https://tzgenergy.com/#organization' },
+            name: 'TZG Energy',
+            image: 'https://tzgenergy.com/og-image.jpg',
+            priceRange: '$$',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Shenzhen',
+              addressRegion: 'Guangdong',
+              addressCountry: 'CN',
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: 22.5429,
+              longitude: 114.0596,
+            },
+            openingHoursSpecification: {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+              opens: '09:00',
+              closes: '18:00',
+            },
+          },
+        ],
+      })}} />
+
       {/* CTA */}
       <section className="bg-gradient-energy text-white py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
