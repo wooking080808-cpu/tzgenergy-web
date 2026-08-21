@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { Menu, X, ChevronDown, Globe } from 'lucide-react';
@@ -26,7 +26,6 @@ export function Navbar({ locale }: { locale: string }) {
   const tc = useTranslations('common');
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const langs = [
     { code: 'en', label: 'EN' },
@@ -112,26 +111,69 @@ function NavLink({ href, active, children }: { href: string; active: boolean; ch
   );
 }
 
+/**
+ * 下拉菜单 - 修复了以下问题：
+ * 1. 添加 close delay（150ms），给用户时间从按钮移到下拉项
+ * 2. 添加 invisible bridge padding，连接按钮和下拉项
+ * 3. onMouseLeave 只在 wrapper 离开时触发
+ */
 function DropdownMenu({ label, items, active }: { label: string; items: { href: string; label: string }[]; active: boolean }) {
   const [open, setOpen] = useState(false);
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleEnter = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setOpen(true);
+  };
+
+  const handleLeave = () => {
+    // 延迟关闭，让用户有时间把鼠标从按钮移到下拉项
+    closeTimerRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 180);
+  };
+
+  // 组件卸载时清理 timer
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
   return (
-    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div
+      className="relative"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
       <button className={cn(
         "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition",
         active ? "text-brand-600 bg-brand-50" : "text-slate-700 hover:text-brand-600 hover:bg-slate-50"
       )}>
         {label}
-        <ChevronDown size={14} className={cn("transition-transform", open && "rotate-180")} />
+        <ChevronDown size={14} className={cn("transition-transform duration-200", open && "rotate-180")} />
       </button>
-      {open && (
-        <div className="absolute top-full start-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg py-2">
+
+      {/* 用 pt-2 创建 invisible bridge（避免鼠标经过时离开 wrapper）*/}
+      <div className={cn(
+        "absolute top-full start-0 w-64 pt-2 transition-opacity duration-150",
+        open ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+      )}>
+        <div className="bg-white border border-slate-200 rounded-lg shadow-lg py-2">
           {items.map(it => (
-            <Link key={it.href} href={it.href} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-600">
+            <Link
+              key={it.href}
+              href={it.href}
+              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-brand-600 transition-colors"
+            >
               {it.label}
             </Link>
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
