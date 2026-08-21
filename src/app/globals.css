@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0f7ff;
+  --color-brand-100: #e0effe;
+  --color-brand-500: #1e6df0;
+  --color-brand-600: #1758cc;
+  --color-brand-700: #134aa8;
+  --color-brand-900: #0a2c66;
+  --color-energy-500: #00b894;
+  --color-energy-600: #00997a;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans', sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-slate-900 antialiased;
+  }
+  /* RTL 支持 */
+  [dir="rtl"] {
+    text-align: right;
+  }
+}
+
+/* RTL 工具类镜像 */
+[dir="rtl"] .ltr-only { display: none; }
+[dir="ltr"] .rtl-only { display: none; }
+
+/* 隐藏滚动条但保持可滚动 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 渐变背景 */
+.bg-gradient-energy {
+  background: linear-gradient(135deg, #0a2c66 0%, #1758cc 50%, #00b894 100%);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

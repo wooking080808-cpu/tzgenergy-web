@@ -1,0 +1,156 @@
+# Decap CMS 配置 (https://decapcms.org)
+# 访问 /admin 打开后台，使用 GitHub 账号登录后即可编辑
+# 文档：https://decapcms.org/docs/configuration-options/
+
+backend:
+  name: github
+  repo: ericx0/tzgenergy-web  # 替换为你的 repo
+  branch: main
+  base_url: https://github.com
+  auth_endpoint: api.github.com
+
+# 启用本地开发（开发模式下用 local 模式，无需 GitHub OAuth）
+local_backend: true
+
+# 站点信息
+site_url: https://tzgenergy.com
+display_url: https://tzgenergy.com
+logo_url: /admin/logo.svg
+
+# 多语种切换（编辑时按语言分别保存到 content/{locale}/...）
+locale: en
+
+publish_mode: editorial_workflow
+
+# 媒体上传 - 本地存到 public/images
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+
+# 集合（每个 = 一种内容类型）
+collections:
+  # 1. 产品（多语种）
+  - name: "products"
+    label: "Products"
+    folder: "content/products"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    media_folder: "/images/products"
+    public_folder: "/images/products"
+    fields:
+      - { name: "title", label: "Title (EN)", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string", hint: "URL path, e.g. r10-residential" }
+      - { name: "segment", label: "Segment", widget: "select", options: ["residential", "commercial", "utility"] }
+      - { name: "capacity", label: "Capacity", widget: "string", hint: "e.g. 10 kWh" }
+      - { name: "voltage", label: "Voltage", widget: "string" }
+      - { name: "chemistry", label: "Chemistry", widget: "string", default: "LiFePO4" }
+      - { name: "cycleLife", label: "Cycle Life", widget: "string" }
+      - { name: "certifications", label: "Certifications", widget: "list", default: ["CE", "IEC62619", "UN38.3"] }
+      - { name: "highlights", label: "Highlights", widget: "list" }
+      - { name: "applications", label: "Applications", widget: "list" }
+      - { name: "compatibleInverters", label: "Compatible Inverters", widget: "list" }
+      - { name: "image", label: "Cover Image", widget: "image" }
+      - { name: "gallery", label: "Gallery", widget: "list", field: { name: "img", label: "Image", widget: "image" } }
+      - { name: "body", label: "Body", widget: "markdown" }
+      - { name: "published", label: "Published", widget: "boolean", default: true }
+      - { name: "date", label: "Date", widget: "datetime" }
+
+  # 2. 博客文章
+  - name: "blog"
+    label: "Blog & Insights"
+    folder: "content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    media_folder: "/images/blog"
+    public_folder: "/images/blog"
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string" }
+      - { name: "excerpt", label: "Excerpt (SEO meta description)", widget: "text" }
+      - { name: "category", label: "Category", widget: "select", options: ["technology", "engineering", "finance", "residential", "commercial", "utility", "guides"] }
+      - { name: "tags", label: "Tags", widget: "list" }
+      - { name: "author", label: "Author", widget: "string", default: "TZG Energy Team" }
+      - { name: "date", label: "Publish Date", widget: "datetime" }
+      - { name: "readTime", label: "Read Time (min)", widget: "number", default: 8 }
+      - { name: "coverImage", label: "Cover Image", widget: "image" }
+      - { name: "body", label: "Body (Markdown)", widget: "markdown" }
+      - { name: "published", label: "Published", widget: "boolean", default: true }
+      - { name: "seoTitle", label: "SEO Title (optional)", widget: "string", required: false }
+      - { name: "seoDescription", label: "SEO Description (optional)", widget: "text", required: false }
+
+  # 3. 案例
+  - name: "cases"
+    label: "Project Cases"
+    folder: "content/cases"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string" }
+      - { name: "country", label: "Country", widget: "string" }
+      - { name: "industry", label: "Industry", widget: "string" }
+      - { name: "capacity", label: "Capacity", widget: "string" }
+      - { name: "year", label: "Year", widget: "number" }
+      - { name: "challenge", label: "Project Challenge", widget: "text" }
+      - { name: "solution", label: "Our Solution", widget: "text" }
+      - { name: "result", label: "Result", widget: "text" }
+      - { name: "testimonial", label: "Client Testimonial", widget: "text", required: false }
+      - { name: "coverImage", label: "Cover Image", widget: "image" }
+      - { name: "gallery", label: "Gallery", widget: "list", field: { name: "img", label: "Image", widget: "image" } }
+      - { name: "body", label: "Body", widget: "markdown" }
+      - { name: "published", label: "Published", widget: "boolean", default: true }
+
+  # 4. 解决方案
+  - name: "solutions"
+    label: "Solutions"
+    folder: "content/solutions"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string" }
+      - { name: "subtitle", label: "Subtitle", widget: "string" }
+      - { name: "description", label: "Description", widget: "text" }
+      - { name: "benefits", label: "Key Benefits", widget: "list" }
+      - { name: "coverImage", label: "Cover Image", widget: "image" }
+      - { name: "body", label: "Body", widget: "markdown" }
+      - { name: "published", label: "Published", widget: "boolean", default: true }
+
+  # 5. 静态页面（关于我们、下载等）
+  - name: "pages"
+    label: "Static Pages"
+    folder: "content/pages"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "slug", label: "Slug", widget: "string" }
+      - { name: "body", label: "Body", widget: "markdown" }
+      - { name: "published", label: "Published", widget: "boolean", default: true }
+
+  # 6. 站点设置（全局）
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - name: "site"
+        label: "Site Info"
+        file: "content/settings/site.json"
+        fields:
+          - { name: "companyName", label: "Company Name", widget: "string" }
+          - { name: "tagline", label: "Tagline", widget: "string" }
+          - { name: "email", label: "Sales Email", widget: "string" }
+          - { name: "phone", label: "Phone", widget: "string" }
+          - { name: "whatsapp", label: "WhatsApp Number", widget: "string" }
+          - { name: "address", label: "Address", widget: "text" }
+          - { name: "social", label: "Social Links", widget: "object", fields:
+              - { name: "linkedin", label: "LinkedIn", widget: "string" }
+              - { name: "youtube", label: "YouTube", widget: "string" }
+              - { name: "facebook", label: "Facebook", widget: "string" }
+          }
