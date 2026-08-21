@@ -100,17 +100,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3) 企业微信群机器人
+    // 3) 企业微信群机器人推送（双语：英文标记 + 中文内容，方便群里查看）
     if (process.env.WECHAT_WEBHOOK_URL && !process.env.WECHAT_WEBHOOK_URL.includes('placeholder')) {
       try {
-        const wa_msg = `🔔 **新询盘 — ${(locale || 'en').toUpperCase()}**
-👤 ${name} @ ${company}
-🌍 ${country} | 📞 ${phone}
-📧 ${email}
-📦 ${product || '-'} | 🏗 ${projectType}
-⚡ ${projectSize || '-'}
-💬 ${(message || '-').substring(0, 200)}
-🕐 ${new Date().toISOString()}`;
+        // 项目类型对应的 emoji + 中文标签
+        const projectEmojiMap: Record<string, string> = {
+          residential: '🏠',
+          commercial: '🏢',
+          utility: '⚡',
+          distributor: '🤝',
+          other: '❓',
+        };
+        const projectLabelMap: Record<string, string> = {
+          residential: '户用',
+          commercial: '工商业',
+          utility: '大型电站',
+          distributor: '分销代理',
+          other: '其他',
+        };
+        const productEmoji = projectEmojiMap[productType] || '📦';
+        const productLabel = projectLabelMap[projectType] || projectType;
+
+        const wa_msg = `🔔 <font color="warning">**新询盘**</font>  ${(locale || 'en').toUpperCase()}
+
+👤 **${name}**
+🏢 ${company}
+🌍 ${country}  |  📞 ${phone}
+📧 [${email}](mailto:${email})
+
+${productEmoji} **${productLabel}**  |  ⚡ ${projectSize || '未填'}
+
+💬 ${(message || '(无留言)').substring(0, 300)}${(message || '').length > 300 ? '...' : ''}
+
+⏰ ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })} CST
+
+👉 <font color="info">[查看网站](https://tzgenergy.com/${locale}/contact)  ·  [回复邮件](mailto:${email})</font>`;
         await fetch(process.env.WECHAT_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
