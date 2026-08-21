@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
           distributor: '分销代理',
           other: '其他',
         };
-        const productEmoji = projectEmojiMap[productType] || '📦';
+        const productEmoji = projectEmojiMap[projectType] || '📦';
         const productLabel = projectLabelMap[projectType] || projectType;
 
         const wa_msg = `🔔 <font color="warning">**新询盘**</font>  ${(locale || 'en').toUpperCase()}
