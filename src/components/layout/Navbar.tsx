@@ -30,6 +30,7 @@ export function Navbar({ locale }: { locale: string }) {
 
   const langs = [
     { code: 'en', label: 'EN' },
+    { code: 'zh', label: '中' },
     { code: 'ru', label: 'RU' },
     { code: 'ar', label: 'ع' },
   ];
