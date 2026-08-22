@@ -4,7 +4,7 @@
 
 backend:
   name: github
-  repo: ericx0/tzgenergy-web  # 替换为你的 repo
+  repo: wooking080808-cpu/tzgenergy-web  # 客户仓库
   branch: main
   base_url: https://github.com
   auth_endpoint: api.github.com
@@ -149,8 +149,10 @@ collections:
           - { name: "phone", label: "Phone", widget: "string" }
           - { name: "whatsapp", label: "WhatsApp Number", widget: "string" }
           - { name: "address", label: "Address", widget: "text" }
-          - { name: "social", label: "Social Links", widget: "object", fields:
+          - name: "social"
+            label: "Social Links"
+            widget: "object"
+            fields:
               - { name: "linkedin", label: "LinkedIn", widget: "string" }
               - { name: "youtube", label: "YouTube", widget: "string" }
               - { name: "facebook", label: "Facebook", widget: "string" }
-          }
