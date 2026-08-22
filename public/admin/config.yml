@@ -6,8 +6,9 @@ backend:
   name: github
   repo: wooking080808-cpu/tzgenergy-web  # 客户仓库
   branch: main
-  base_url: https://github.com
-  auth_endpoint: api.github.com
+  # OAuth Proxy:Next.js API route 部署在同源(https://tzgenergy.com/api/oauth)
+  base_url: https://tzgenergy.com
+  auth_endpoint: api/oauth
 
 # 启用本地开发（开发模式下用 local 模式，无需 GitHub OAuth）
 local_backend: true
