@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TZG Energy CMS - Login</title>
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: linear-gradient(135deg, #0a2c66 0%, #1758cc 50%, #00b894 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .card {
+      background: white;
+      color: #1e293b;
+      padding: 40px 32px;
+      border-radius: 16px;
+      width: 420px;
+      max-width: 100%;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    }
+    .logo {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .logo .blue { color: #0a2c66; }
+    .logo .green { color: #10b981; }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 28px;
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #475569;
+    }
+    .input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: inherit;
+      transition: all 0.15s;
+      margin-bottom: 16px;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+      background: white;
+    }
+    .input[readonly] {
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+    .input.code {
+      font-size: 28px;
+      letter-spacing: 12px;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 700;
+    }
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .msg {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .msg.error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .msg.info {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #64748b;
+      text-decoration: none;
+    }
+    .back:hover { color: #10b981; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><span class="blue">TZG</span><span class="green">Energy</span></div>
+    <p class="subtitle">CMS Admin Login</p>
+
+    <div id="error" class="msg error" style="display:none"></div>
+    <div id="info" class="msg info" style="display:none"></div>
+
+    <!-- Step 1: confirm email -->
+    <div id="step1" class="step active">
+      <label for="email">Admin email</label>
+      <input id="email" class="input" type="email" value="admin@tzgenergy.com" readonly />
+      <button id="sendBtn" class="btn">Send Verification Code</button>
+    </div>
+
+    <!-- Step 2: enter 6-digit code -->
+    <div id="step2" class="step">
+      <label for="code">6-digit code (sent to your email)</label>
+      <input id="code" class="input code" maxlength="6" inputmode="numeric"
+             pattern="[0-9]{6}" placeholder="000000" autocomplete="one-time-code" />
+      <button id="verifyBtn" class="btn">Verify &amp; Login</button>
+      <a href="#" id="resendLink" class="back" style="margin-top:14px;display:block;text-align:center">← Resend code</a>
+    </div>
+
+    <p class="footer">Powered by TZG Energy · tzgenergy.com</p>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const showError = (msg) => {
+      $('error').textContent = msg;
+      $('error').style.display = 'block';
+      $('info').style.display = 'none';
+    };
+    const showInfo = (msg) => {
+      $('info').textContent = msg;
+      $('info').style.display = 'block';
+      $('error').style.display = 'none';
+    };
+    const hideMessages = () => {
+      $('error').style.display = 'none';
+      $('info').style.display = 'none';
+    };
+
+    async function fetchToken() {
+      const r = await fetch('/api/auth/decap-token', { credentials: 'include' });
+      if (!r.ok) throw new Error('Could not get auth token');
+      const data = await r.json();
+      return data.token;
+    }
+
+    $('sendBtn').addEventListener('click', async () => {
+      hideMessages();
+      const email = $('email').value.trim();
+      $('sendBtn').disabled = true;
+      $('sendBtn').textContent = 'Sending...';
+      try {
+        const r = await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          showError(data.error || 'Failed to send code');
+          $('sendBtn').disabled = false;
+          $('sendBtn').textContent = 'Send Verification Code';
+          return;
+        }
+        showInfo('Code sent. Check your inbox.');
+        $('step1').classList.remove('active');
+        $('step2').classList.add('active');
+        $('code').value = '';
+        $('code').focus();
+      } catch (e) {
+        showError('Network error: ' + e.message);
+        $('sendBtn').disabled = false;
+        $('sendBtn').textContent = 'Send Verification Code';
+      }
+    });
+
+    $('verifyBtn').addEventListener('click', async () => {
+      hideMessages();
+      const email = $('email').value.trim();
+      const code = $('code').value.trim();
+      if (!/^\d{6}$/.test(code)) {
+        showError('Enter the 6-digit code from the email');
+        return;
+      }
+      $('verifyBtn').disabled = true;
+      $('verifyBtn').textContent = 'Verifying...';
+      try {
+        const r = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, code }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          showError(data.error || 'Verification failed');
+          $('verifyBtn').disabled = false;
+          $('verifyBtn').textContent = 'Verify & Login';
+          return;
+        }
+        showInfo('Logged in. Loading editor...');
+        const token = await fetchToken();
+        // Use replace so the back button doesn\'t return to this page
+        window.location.replace('/admin/#access_token=' + encodeURIComponent(token));
+      } catch (e) {
+        showError('Network error: ' + e.message);
+        $('verifyBtn').disabled = false;
+        $('verifyBtn').textContent = 'Verify & Login';
+      }
+    });
+
+    $('resendLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      $('step2').classList.remove('active');
+      $('step1').classList.add('active');
+      $('sendBtn').disabled = false;
+      $('sendBtn').textContent = 'Send Verification Code';
+      hideMessages();
+    });
+
+    // Enter key submits code
+    $('code').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('verifyBtn').click();
+    });
+
+    // If already logged in (cookie exists), try to jump straight in
+    (async () => {
+      try {
+        const r = await fetch('/api/auth/check', { credentials: 'include' });
+        if (r.ok) {
+          const token = await fetchToken();
+          window.location.replace('/admin/#access_token=' + encodeURIComponent(token));
+        }
+      } catch {}
+    })();
+  </script>
+</body>
+</html>

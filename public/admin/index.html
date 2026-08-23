@@ -8,7 +8,40 @@
   <link rel="icon" href="/favicon.ico" />
 </head>
 <body>
-  <!-- 加载 Decap CMS（Git-based headless CMS） -->
+  <!-- TZG Energy CMS -->
+
+  <script>
+    // Auth gate: verify session cookie; fetch & inject GitHub token; then init Decap.
+    (async () => {
+      try {
+        const r = await fetch('/api/auth/check', { credentials: 'include' });
+        if (!r.ok) {
+          window.location.replace('/admin/login.html');
+          return;
+        }
+        // Authed. If URL fragment already has the token (just logged in), init Decap.
+        if (window.location.hash.includes('access_token=')) {
+          window.CMS_MANUAL_INIT = true;
+          return;
+        }
+        // Otherwise fetch token from server and redirect into /admin/ with the fragment.
+        const tr = await fetch('/api/auth/decap-token', { credentials: 'include' });
+        if (!tr.ok) {
+          window.location.replace('/admin/login.html');
+          return;
+        }
+        const { token } = await tr.json();
+        window.location.replace('/admin/#access_token=' + encodeURIComponent(token));
+      } catch (e) {
+        window.location.replace('/admin/login.html');
+      }
+    })();
+  </script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    if (window.CMS_MANUAL_INIT && window.CMS) {
+      window.CMS.init();
+    }
+  </script>
 </body>
 </html>
