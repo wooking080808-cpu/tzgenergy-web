@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tzgenergy.com';
+const DEFAULT_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tzgenergy.com';
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get('code');
   const error = req.nextUrl.searchParams.get('error');
+  const state = req.nextUrl.searchParams.get('state') || DEFAULT_SITE_URL;
+
+  // site_id (state) 必须以协议开头,如果没有则用默认
+  let siteUrl = state;
+  if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
+    siteUrl = DEFAULT_SITE_URL;
+  }
 
   if (error) {
-    return NextResponse.redirect(`${SITE_URL}/admin/#/error=${encodeURIComponent(error)}`, 302);
+    return NextResponse.redirect(`${siteUrl}/admin/#/error=${encodeURIComponent(error)}`, 302);
   }
   if (!code) {
     return NextResponse.json({ error: 'Missing code parameter' }, { status: 400 });
@@ -26,11 +33,15 @@ export async function GET(req: NextRequest) {
   const origin = req.nextUrl.origin;
   const redirectUri = `${origin}/api/oauth/callback`;
 
-  // 用 code 换 access_token
   const tokenResponse = await fetch(GITHUB_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code, redirect_uri: redirectUri }),
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: redirectUri,
+    }),
   });
 
   if (!tokenResponse.ok) {
@@ -43,7 +54,7 @@ export async function GET(req: NextRequest) {
   const tokenData = await tokenResponse.json();
   if (tokenData.error) {
     return NextResponse.redirect(
-        `${SITE_URL}/admin/#/error=${encodeURIComponent(tokenData.error)}`,
+        `${siteUrl}/admin/#/error=${encodeURIComponent(tokenData.error)}`,
         302
     );
   }
@@ -53,7 +64,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No access_token in response', body: tokenData }, { status: 502 });
   }
 
-  // 跳回 Decap CMS,token 放在 URL fragment(# 后)
   // Decap 期望的格式: {site_url}/admin/#/access_token=<token>
-  return NextResponse.redirect(`${SITE_URL}/admin/#/access_token=${accessToken}`, 302);
+  return NextResponse.redirect(`${siteUrl}/admin/#/access_token=${accessToken}`, 302);
 }
