@@ -8,6 +8,29 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, company, country, phone, email, product, projectType, projectSize, message, locale } = body;
 
+    // === Validation: 必填字段不能为空(防误触和 bot) ===
+    const required: Record<string, unknown> = { name, company, country, phone, email };
+    const missing = Object.entries(required)
+      .filter(([, v]) => !v || (typeof v === 'string' && !v.trim()))
+      .map(([k]) => k);
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { ok: false, error: `Missing required fields: ${missing.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // === Email 格式校验 ===
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) {
+      return NextResponse.json({ ok: false, error: 'Invalid email' }, { status: 400 });
+    }
+
+    // === Length sanity check(防滥用 / 大 body) ===
+    if (name.length > 200 || company.length > 200 || country.length > 100 || phone.length > 50) {
+      return NextResponse.json({ ok: false, error: 'Field too long' }, { status: 400 });
+    }
+
     const salesEmail = process.env.SALES_EMAIL || 'sales@tzgenergy.com';
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'TZG Energy <sales@tzgenergy.com>';
 
